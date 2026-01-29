@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kawaii - Select Server</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #050810 0%, #0f1419 50%, #0a0f1a 100%);
+      color: #f0f4f8;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .header-text h1 {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #696cff, #7c7eff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-text p {
+      font-size: 14px;
+      color: #a0afc0;
+      margin-top: 4px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(21, 29, 45, 0.6);
+      border: 1px solid #2d3b52;
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #696cff;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #f0f4f8;
+    }
+
+    .logout-btn {
+      background: rgba(255, 62, 29, 0.1);
+      color: #ff3e1d;
+      border: 1px solid rgba(255, 62, 29, 0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-left: 12px;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 62, 29, 0.2);
+      border-color: #ff3e1d;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #f0f4f8;
+    }
+
+    .servers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .server-card {
+      background: linear-gradient(135deg, rgba(21, 29, 45, 0.6), rgba(21, 29, 45, 0.3));
+      border: 1px solid #2d3b52;
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .server-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(105, 108, 255, 0.2), transparent);
+    }
+
+    .server-card:hover {
+      border-color: #696cff;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(105, 108, 255, 0.2);
+    }
+
+    .server-card.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .server-card.disabled:hover {
+      transform: none;
+      border-color: #2d3b52;
+      box-shadow: none;
+    }
+
+    .server-icon-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .server-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #696cff, #7c7eff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .server-icon img {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .server-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .server-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f0f4f8;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .server-members {
+      font-size: 13px;
+      color: #a0afc0;
+    }
+
+    .server-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .server-status.connected {
+      background: rgba(113, 221, 55, 0.1);
+      color: #71dd37;
+      border: 1px solid rgba(113, 221, 55, 0.3);
+    }
+
+    .server-status.not-connected {
+      background: rgba(255, 171, 0, 0.1);
+      color: #ffab00;
+      border: 1px solid rgba(255, 171, 0, 0.3);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-dot.connected {
+      background: #71dd37;
+    }
+
+    .status-dot.not-connected {
+      background: #ffab00;
+    }
+
+    .invite-btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #696cff, #7c7eff);
+      color: white;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .invite-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(105, 108, 255, 0.4);
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      color: #a0afc0;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #2d3b52;
+      border-top-color: #696cff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #a0afc0;
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 20px;
+      fill: #696cff;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      color: #f0f4f8;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 20px 16px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .header-left {
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .header-text h1 {
+        font-size: 22px;
+      }
+
+      .header-text p {
+        font-size: 13px;
+      }
+
+      .user-info {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 10px 14px;
+        gap: 10px;
+      }
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+      }
+
+      .user-name {
+        font-size: 14px;
+        flex: 1;
+      }
+
+      .logout-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin-left: auto;
+      }
+
+      .section-title {
+        font-size: 16px;
+        margin-bottom: 16px;
+      }
+
+      .servers-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .server-card {
+        padding: 20px;
+      }
+
+      .server-icon-wrapper {
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .server-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+        border-radius: 12px;
+      }
+
+      .server-icon img {
+        border-radius: 12px;
+      }
+
+      .server-name {
+        font-size: 16px;
+      }
+
+      .server-members {
+        font-size: 12px;
+      }
+
+      .server-status {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+
+      .invite-btn {
+        margin-top: 14px;
+        padding: 8px 16px;
+        font-size: 12px;
+      }
+
+      .loading {
+        padding: 40px 20px;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .spinner {
+        margin-right: 0;
+      }
+
+      .empty-state {
+        padding: 40px 16px;
+      }
+
+      .empty-state svg {
+        width: 48px;
+        height: 48px;
+      }
+
+      .empty-state h3 {
+        font-size: 18px;
+      }
+
+      .empty-state p {
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 16px 12px;
+      }
+
+      .header-left {
+        gap: 10px;
+      }
+
+      .logo-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+      }
+
+      .header-text h1 {
+        font-size: 20px;
+      }
+
+      .header-text p {
+        font-size: 12px;
+      }
+
+      .user-info {
+        padding: 8px 12px;
+        border-radius: 10px;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+      }
+
+      .user-name {
+        font-size: 13px;
+      }
+
+      .logout-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+        border-radius: 6px;
+      }
+
+      .section-title {
+        font-size: 15px;
+        margin-bottom: 14px;
+      }
+
+      .servers-grid {
+        gap: 14px;
+      }
+
+      .server-card {
+        padding: 16px;
+        border-radius: 12px;
+      }
+
+      .server-icon-wrapper {
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .server-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+        border-radius: 10px;
+      }
+
+      .server-icon img {
+        border-radius: 10px;
+      }
+
+      .server-name {
+        font-size: 15px;
+      }
+
+      .server-members {
+        font-size: 11px;
+      }
+
+      .server-status {
+        padding: 4px 8px;
+        font-size: 10px;
+        gap: 4px;
+      }
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+      }
+
+      .invite-btn {
+        margin-top: 12px;
+        padding: 8px 14px;
+        font-size: 11px;
+        border-radius: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <img src="/logo.png" alt="Kawaii Logo" class="logo-icon">
+        <div class="header-text">
+          <h1>Kawaii</h1>
+          <p>Select a server to configure</p>
+        </div>
+      </div>
+      <div class="user-info" id="userInfo" style="display: none;">
+        <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+        <span id="userName" class="user-name"></span>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+
+    <h2 class="section-title">Your Servers</h2>
+    
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <span>Loading your servers...</span>
+    </div>
+
+    <div id="serversGrid" class="servers-grid" style="display: none;"></div>
+    
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      <h3>No servers found</h3>
+      <p>You need Administrator permission on a server to configure it. Make sure you're an admin in at least one server.</p>
+    </div>
+  </div>
+
+  <script>
+    const CLIENT_ID = '1417399852031148085';
+    
+    function getAuthToken() {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'auth') return value;
+      }
+      return null;
+    }
+    
+    const authToken = getAuthToken();
+    
+    async function init() {
+      if (!authToken) {
+        window.location.href = '/login';
+        return;
+      }
+      
+      try {
+        const userResponse = await fetch('/api/user', {
+          credentials: 'include'
+        });
+        
+        if (!userResponse.ok) {
+          throw new Error('Failed to get user info');
+        }
+        
+        const user = await userResponse.json();
+        document.getElementById('userAvatar').src = user.avatarUrl;
+        document.getElementById('userName').textContent = user.username;
+        document.getElementById('userInfo').style.display = 'flex';
+        
+        const serversResponse = await fetch('/api/servers', {
+          credentials: 'include'
+        });
+        
+        if (!serversResponse.ok) {
+          throw new Error('Failed to fetch servers');
+        }
+        
+        const servers = await serversResponse.json();
+        
+        document.getElementById('loading').style.display = 'none';
+        
+        if (servers.length === 0) {
+          document.getElementById('emptyState').style.display = 'block';
+          return;
+        }
+        
+        const grid = document.getElementById('serversGrid');
+        grid.style.display = 'grid';
+        
+        servers.forEach(server => {
+          const card = createServerCard(server);
+          grid.appendChild(card);
+        });
+        
+      } catch (error) {
+        console.error('Error:', error);
+        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+          window.location.href = '/login';
+        }
+      }
+    }
+    
+    function createServerCard(server) {
+      const card = document.createElement('div');
+      card.className = 'server-card' + (server.botJoined ? '' : ' disabled');
+      
+      const iconContent = server.iconUrl 
+        ? `<img src="${server.iconUrl}" alt="${server.name}">`
+        : server.name.charAt(0).toUpperCase();
+      
+      card.innerHTML = `
+        <div class="server-icon-wrapper">
+          <div class="server-icon">${iconContent}</div>
+          <div class="server-info">
+            <div class="server-name">${escapeHtml(server.name)}</div>
+            ${server.memberCount ? `<div class="server-members">${server.memberCount.toLocaleString()} members</div>` : ''}
+          </div>
+        </div>
+        <div class="server-status ${server.botJoined ? 'connected' : 'not-connected'}">
+          <span class="status-dot ${server.botJoined ? 'connected' : 'not-connected'}"></span>
+          ${server.botJoined ? 'Bot Connected' : 'Bot Not Added'}
+        </div>
+        ${!server.botJoined ? `<a href="https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&permissions=8&scope=bot" target="_blank" class="invite-btn" onclick="event.stopPropagation();">Add Bot to Server</a>` : ''}
+      `;
+      
+      if (server.botJoined) {
+        card.addEventListener('click', () => {
+          window.location.href = `/dashboard?guildId=${server.id}`;
+        });
+      }
+      
+      return card;
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    async function handleLogout() {
+      await fetch('/api/logout', { credentials: 'include' });
+      document.cookie = 'auth=; path=/; max-age=0';
+      window.location.href = '/login';
+    }
+    
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discord Logger | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0f1419;
+      --bg-secondary: #151d2d;
+      --bg-tertiary: #1a202c;
+      --bg-card: #151d2d;
+      --bg-card-hover: #1a253f;
+      --border-color: #2d3b52;
+      --border-hover: #696cff;
+      --text-primary: #f0f4f8;
+      --text-secondary: #a0afc0;
+      --text-muted: #6b7d93;
+      --accent-primary: #696cff;
+      --accent-secondary: #7c7eff;
+      --accent-tertiary: #9195ff;
+      --accent-glow: rgba(105, 108, 255, 0.15);
+      --success: #71dd37;
+      --success-bg: rgba(113, 221, 55, 0.08);
+      --error: #ff3e1d;
+      --error-bg: rgba(255, 62, 29, 0.08);
+      --warning: #ffab00;
+      --members-color: #71dd37;
+      --roles-color: #ffab00;
+      --channels-color: #007bff;
+      --messages-color: #ff3e1d;
+      --invites-color: #696cff;
+      --server-color: #7a838b;
+      --pink-primary: #e9bacc;
+      --pink-accent: #fac0d7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #050810 0%, #0f1419 50%, #0a0f1a 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #0f1419 0%, #151d2d 50%, #0f1419 100%);
+      border-right: 1px solid var(--border-color);
+      padding: 28px 16px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: inset -1px 0 0 rgba(105, 108, 255, 0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #696cff 0%, #7c7eff 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(105, 108, 255, 0.25);
+      flex-shrink: 0;
+    }
+
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: #696cff;
+      letter-spacing: 0.3px;
+    }
+
+    .logo-subtitle {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .nav-section {
+      margin-bottom: 20px;
+    }
+
+    .nav-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      padding-left: 12px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 14px;
+      border-radius: 9px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: rgba(105, 108, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(105, 108, 255, 0.15), rgba(105, 108, 255, 0.05));
+      color: #696cff;
+      border-left-color: #696cff;
+    }
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .nav-item[data-section="members"] .nav-icon svg { fill: var(--members-color); }
+    .nav-item[data-section="roles"] .nav-icon svg { fill: var(--roles-color); }
+    .nav-item[data-section="channels"] .nav-icon svg { fill: var(--channels-color); }
+    .nav-item[data-section="messages"] .nav-icon svg { fill: var(--messages-color); }
+    .nav-item[data-section="invites"] .nav-icon svg { fill: var(--invites-color); }
+    .nav-item[data-section="server"] .nav-icon svg { fill: var(--server-color); }
+
+    .logout-btn {
+      margin-top: auto;
+      padding: 12px 16px;
+      background: rgba(255, 62, 29, 0.1);
+      color: #ff3e1d;
+      border: 1.5px solid rgba(255, 62, 29, 0.3);
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 62, 29, 0.2);
+      border-color: #ff3e1d;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 62, 29, 0.15);
+    }
+
+    .main {
+      flex: 1;
+      margin-left: 260px;
+      padding: 36px 48px;
+      background: linear-gradient(135deg, #050810 0%, #0f1419 50%, #0a0f1a 100%);
+    }
+
+    .header {
+      margin-bottom: 28px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #696cff 0%, #7c7eff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-weight: 400;
+    }
+
+    .guild-selector-wrapper {
+      background: linear-gradient(135deg, rgba(21, 29, 45, 0.6), rgba(21, 29, 45, 0.3));
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .guild-selector-wrapper:hover {
+      border-color: #696cff;
+      box-shadow: 0 12px 40px rgba(105, 108, 255, 0.25);
+      background: linear-gradient(135deg, rgba(21, 29, 45, 0.8), rgba(21, 29, 45, 0.5));
+    }
+
+    .guild-selector-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .guild-selector-label svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--text-muted);
+    }
+
+    .guild-selector {
+      width: 100%;
+      background: rgba(10, 15, 26, 0.5);
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236b7d93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+    }
+
+    .guild-selector:hover,
+    .guild-selector:focus {
+      border-color: #696cff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.15);
+      background-color: rgba(10, 15, 26, 0.8);
+    }
+
+    .events-section {
+      margin-bottom: 36px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .section-icon.members { background: rgba(34, 197, 94, 0.15); }
+    .section-icon.members svg { fill: #22c55e; }
+    .section-icon.roles { background: rgba(251, 191, 36, 0.15); }
+    .section-icon.roles svg { fill: #fbbf24; }
+    .section-icon.channels { background: rgba(59, 130, 246, 0.15); }
+    .section-icon.channels svg { fill: #3b82f6; }
+    .section-icon.messages { background: rgba(244, 63, 94, 0.15); }
+    .section-icon.messages svg { fill: #f43f5e; }
+    .section-icon.invites { background: rgba(168, 85, 247, 0.15); }
+    .section-icon.invites svg { fill: #a855f7; }
+    .section-icon.server { background: rgba(148, 163, 184, 0.15); }
+    .section-icon.server svg { fill: #94a3b8; }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .event-card {
+      background: linear-gradient(135deg, rgba(21, 29, 45, 0.4), rgba(21, 29, 45, 0.1));
+      border: 1.5px solid var(--border-color);
+      border-left: 4px solid transparent;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .event-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(105, 108, 255, 0.2), transparent);
+    }
+
+    .event-card:hover {
+      border-color: #696cff;
+      border-left-color: #696cff;
+      background: linear-gradient(135deg, rgba(21, 29, 45, 0.7), rgba(21, 29, 45, 0.3));
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(105, 108, 255, 0.2);
+    }
+
+    .event-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .event-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(105, 108, 255, 0.15), rgba(105, 108, 255, 0.08));
+      border: 1px solid rgba(105, 108, 255, 0.25);
+      flex-shrink: 0;
+    }
+
+    .event-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #696cff;
+    }
+
+    .event-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.2px;
+    }
+
+    .channel-select {
+      width: 100% !important;
+      background: linear-gradient(135deg, rgba(10, 15, 26, 0.7), rgba(10, 15, 26, 0.4)) !important;
+      border: 2px solid #696cff !important;
+      border-radius: 12px !important;
+      padding: 13px 16px !important;
+      color: var(--text-primary) !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      font-family: inherit !important;
+      cursor: pointer !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23696cff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 12px center !important;
+      background-size: 18px !important;
+      padding-right: 42px !important;
+      box-shadow: 0 4px 12px rgba(105, 108, 255, 0.25) !important;
+      margin-top: auto !important;
+    }
+
+    .channel-select:hover {
+      border-color: #8b8fff !important;
+      box-shadow: 0 8px 24px rgba(105, 108, 255, 0.35) !important;
+      background: linear-gradient(135deg, rgba(105, 108, 255, 0.1), rgba(105, 108, 255, 0.05)) !important;
+      transform: translateY(-2px) !important;
+    }
+
+    .channel-select:focus {
+      border-color: #9195ff !important;
+      outline: none !important;
+      box-shadow: 0 0 0 4px rgba(105, 108, 255, 0.15), 0 8px 24px rgba(105, 108, 255, 0.3) !important;
+      background: linear-gradient(135deg, rgba(105, 108, 255, 0.12), rgba(105, 108, 255, 0.06)) !important;
+    }
+
+    .channel-select option {
+      background: #151d2d !important;
+      color: var(--text-primary) !important;
+      padding: 10px 12px !important;
+      border-radius: 6px !important;
+    }
+    
+    .channel-select option:checked {
+      background: linear-gradient(#696cff, #696cff) !important;
+      background-color: #696cff !important;
+    }
+
+    .actions {
+      display: flex;
+      gap: 16px;
+      padding: 24px 48px;
+      background: linear-gradient(180deg, rgba(15, 20, 25, 0.8), rgba(10, 15, 26, 0.9));
+      border-top: 1px solid var(--border-color);
+      position: sticky;
+      bottom: 0;
+      margin: 32px -48px -36px;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn {
+      padding: 13px 28px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      letter-spacing: 0.2px;
+    }
+
+    .btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #696cff, #8592a3);
+      color: white;
+      box-shadow: 0 6px 20px rgba(105, 108, 255, 0.4);
+    }
+
+    .btn-primary svg {
+      fill: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(105, 108, 255, 0.5);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(26, 32, 44, 0.6);
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-secondary svg {
+      fill: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(26, 32, 44, 0.9);
+      color: #696cff;
+      border-color: #696cff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(105, 108, 255, 0.2);
+    }
+
+    .btn-secondary:hover svg {
+      fill: #696cff;
+    }
+
+    .status-bar {
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .status-bar.show {
+      display: flex;
+    }
+
+    .status-bar.success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-bar.error {
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-bar.loading {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--accent-secondary);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .loader {
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 24px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, rgba(105, 108, 255, 0.08), rgba(105, 108, 255, 0.04));
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      margin-bottom: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(105, 108, 255, 0.1);
+      backdrop-filter: blur(8px);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      padding: 12px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #696cff, #9195ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1200px) {
+      .main {
+        padding: 32px 40px;
+      }
+      .events-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        width: 220px;
+      }
+      .main {
+        margin-left: 220px;
+        padding: 28px 32px;
+      }
+      .actions {
+        margin: 28px -32px -28px;
+        padding: 20px 32px;
+        gap: 12px;
+      }
+      .events-grid {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .header h1 {
+        font-size: 28px;
+      }
+      .stats-bar {
+        padding: 20px 24px;
+        gap: 20px;
+      }
+      .stat-value {
+        font-size: 28px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+      .main {
+        margin-left: 0;
+        padding: 24px 18px;
+      }
+      .actions {
+        flex-direction: column;
+        margin: 24px -18px -24px;
+        padding: 18px;
+        gap: 12px;
+      }
+      .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+        font-size: 13px;
+      }
+      .status-bar {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+      }
+      .header {
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        font-size: 24px;
+        margin-bottom: 6px;
+      }
+      .header p {
+        font-size: 14px;
+      }
+      .guild-selector-wrapper {
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+      .stats-bar {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+      }
+      .stat-item {
+        padding: 8px 0;
+      }
+      .stat-value {
+        font-size: 26px;
+      }
+      .stat-label {
+        font-size: 10px;
+      }
+      .events-section {
+        margin-bottom: 24px;
+      }
+      .section-header {
+        margin-bottom: 16px;
+      }
+      .section-title {
+        font-size: 15px;
+      }
+      .events-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .event-card {
+        padding: 16px;
+      }
+      .event-header {
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .event-icon {
+        width: 32px;
+        height: 32px;
+      }
+      .event-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .event-name {
+        font-size: 14px;
+      }
+      .channel-select {
+        font-size: 13px !important;
+        padding: 12px 14px !important;
+        padding-right: 40px !important;
+        border-radius: 10px !important;
+        border: 2px solid #696cff !important;
+        background: linear-gradient(135deg, rgba(10, 15, 26, 0.7), rgba(10, 15, 26, 0.4)) !important;
+        box-shadow: 0 4px 12px rgba(105, 108, 255, 0.25) !important;
+        height: auto !important;
+        min-height: 45px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main {
+        padding: 16px 12px;
+      }
+      .actions {
+        margin: 20px -12px -16px;
+        padding: 14px 12px;
+      }
+      .header h1 {
+        font-size: 20px;
+      }
+      .header p {
+        font-size: 13px;
+      }
+      .guild-selector-wrapper {
+        padding: 14px;
+      }
+      .guild-selector-label {
+        font-size: 10px;
+      }
+      .guild-selector {
+        padding: 11px 12px;
+        font-size: 13px;
+      }
+      .stats-bar {
+        padding: 14px 16px;
+        gap: 12px;
+      }
+      .stat-value {
+        font-size: 24px;
+      }
+      .stat-label {
+        font-size: 9px;
+      }
+      .event-card {
+        padding: 14px;
+      }
+      .event-icon {
+        width: 30px;
+        height: 30px;
+      }
+      .event-icon svg {
+        width: 15px;
+        height: 15px;
+      }
+      .event-name {
+        font-size: 13px;
+      }
+      .channel-select {
+        font-size: 13px !important;
+        padding: 12px 14px !important;
+        padding-right: 40px !important;
+        border-radius: 10px !important;
+        border: 2px solid #696cff !important;
+        background: linear-gradient(135deg, rgba(10, 15, 26, 0.7), rgba(10, 15, 26, 0.4)) !important;
+        box-shadow: 0 4px 12px rgba(105, 108, 255, 0.25) !important;
+        height: auto !important;
+        min-height: 45px !important;
+      }
+      .btn {
+        padding: 11px 16px;
+        font-size: 12px;
+        gap: 6px;
+      }
+      .btn svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .mobile-header {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #0f1419 0%, #151d2d 100%);
+      border-bottom: 1px solid var(--border-color);
+      margin: -24px -18px 20px;
+    }
+
+    .mobile-header .logo-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .mobile-header .logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .mobile-header .logo-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #696cff;
+    }
+
+    .mobile-logout-btn {
+      padding: 8px 12px;
+      background: rgba(255, 62, 29, 0.15);
+      border: 1px solid rgba(255, 62, 29, 0.3);
+      border-radius: 6px;
+      color: #ff3e1d;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .mobile-logout-btn:hover {
+      background: rgba(255, 62, 29, 0.25);
+      border-color: #ff3e1d;
+    }
+
+    .mobile-logout-btn:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 768px) {
+      .mobile-header {
+        display: flex;
+        margin: -24px -18px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <img src="logo.png" alt="Kawaii" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <div>
+          <div class="logo-text">Kawaii</div>
+          <div class="logo-subtitle">Control Panel</div>
+        </div>
+      </div>
+
+      <nav>
+        <div class="nav-section">
+          <a href="/servers" class="nav-item" style="margin-bottom: 12px; background: rgba(105, 108, 255, 0.08); border: 1px solid rgba(105, 108, 255, 0.2); border-radius: 8px;">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#696cff" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </span>
+            <span style="color: #696cff;">Back to Servers</span>
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-title">Navigation</div>
+          <div class="nav-item active">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/></svg>
+            </span>
+            <span>Event Settings</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-title">Event Categories</div>
+          <a href="#moderation" class="nav-item" data-section="roles">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="currentColor"/></svg>
+            </span>
+            <span>Moderation</span>
+          </a>
+          <a href="#welcome" class="nav-item" data-section="members">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+            </span>
+            <span>Welcome Message</span>
+          </a>
+          <a href="#members" class="nav-item" data-section="members">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </span>
+            <span>Members</span>
+          </a>
+          <a href="#roles" class="nav-item" data-section="roles">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>
+            </span>
+            <span>Roles</span>
+          </a>
+          <a href="#channels" class="nav-item" data-section="channels">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5.41 21L6.12 17H2.12L2.47 15H6.47L7.53 9H3.53L3.88 7H7.88L8.59 3H10.59L9.88 7H15.88L16.59 3H18.59L17.88 7H21.88L21.53 9H17.53L16.47 15H20.47L20.12 17H16.12L15.41 21H13.41L14.12 17H8.12L7.41 21H5.41M9.47 9L8.47 15H14.47L15.47 9H9.47Z"/></svg>
+            </span>
+            <span>Channels</span>
+          </a>
+          <a href="#messages" class="nav-item" data-section="messages">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            </span>
+            <span>Messages</span>
+          </a>
+          <a href="#invites" class="nav-item" data-section="invites">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+            </span>
+            <span>Invites</span>
+          </a>
+          <a href="#server" class="nav-item" data-section="server">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z"/></svg>
+            </span>
+            <span>Server</span>
+          </a>
+        </div>
+        <button type="button" class="logout-btn" id="logoutBtn" onclick="handleLogout()">Logout</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="mobile-header">
+        <a href="/servers" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(105, 108, 255, 0.15); border: 1px solid rgba(105, 108, 255, 0.3); border-radius: 8px; text-decoration: none; flex-shrink: 0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#696cff">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+          </svg>
+        </a>
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+          <div class="logo-icon" style="width: 28px; height: 28px; flex-shrink: 0;">
+            <img src="logo.png" alt="Kawaii" style="width: 100%; height: 100%; object-fit: contain;">
+          </div>
+          <div class="logo-text" style="font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kawaii</div>
+        </div>
+        <button type="button" class="mobile-logout-btn" onclick="handleLogout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+        </button>
+      </div>
+
+      <header class="header">
+        <h1>Event Logging Settings</h1>
+        <p>Configure which channels receive event logs for your Kawaii server</p>
+      </header>
+
+      <div class="guild-selector-wrapper" id="serverInfoBox">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div id="serverIcon" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #696cff, #7c7eff); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: white; flex-shrink: 0; overflow: hidden;">
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 11px; font-weight: 600; color: #6b7d93; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Configuring Server</div>
+            <div id="serverName" style="font-size: 18px; font-weight: 700; color: #f0f4f8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Loading...</div>
+          </div>
+          <a href="/servers" style="padding: 10px 16px; background: rgba(105, 108, 255, 0.1); border: 1px solid rgba(105, 108, 255, 0.3); border-radius: 8px; color: #696cff; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; white-space: nowrap;">
+            Change Server
+          </a>
+        </div>
+      </div>
+      <select id="guildSelector" style="display: none;"></select>
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-value" id="totalEvents">19</span>
+          <span class="stat-label">Event Types</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="enabledEvents">0</span>
+          <span class="stat-label">Enabled</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="channelCount">0</span>
+          <span class="stat-label">Channels</span>
+        </div>
+      </div>
+
+      <form id="settingsForm">
+        <!-- Moderation System -->
+        <section id="moderation" class="events-section">
+          <div class="section-header">
+            <div class="section-icon roles">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="currentColor"/></svg>
+            </div>
+            <h2 class="section-title">Moderation System</h2>
+          </div>
+          <div class="events-grid">
+              <div class="event-card">
+                <div class="event-header">
+                  <div class="event-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg></div>
+                  <span class="event-name">Ban Command</span>
+                </div>
+                <select id="ban_enabled" class="channel-select moderation-toggle">
+                  <option value="0">Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </div>
+              <div class="event-card">
+                <div class="event-header">
+                  <div class="event-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg></div>
+                  <span class="event-name">Unban Command</span>
+                </div>
+                <select id="unban_enabled" class="channel-select moderation-toggle">
+                  <option value="0">Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </div>
+              <div class="event-card">
+                <div class="event-header">
+                  <div class="event-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 17l5-5-5-5v10z"/></svg></div>
+                  <span class="event-name">Kick Command</span>
+                </div>
+                <select id="kick_enabled" class="channel-select moderation-toggle">
+                  <option value="0">Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </div>
+              <div class="event-card">
+                <div class="event-header">
+                  <div class="event-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg></div>
+                  <span class="event-name">Timeout Command</span>
+                </div>
+                <select id="timeout_enabled" class="channel-select moderation-toggle">
+                  <option value="0">Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </div>
+              <div class="event-card">
+                <div class="event-header">
+                  <div class="event-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg></div>
+                  <span class="event-name">Voice Mute</span>
+                </div>
+                <select id="voicemute_enabled" class="channel-select moderation-toggle">
+                  <option value="0">Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </div>
+              <div class="event-card">
+                <div class="event-header">
+                  <div class="event-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg></div>
+                  <span class="event-name">Voice Unmute</span>
+                </div>
+                <select id="voiceunmute_enabled" class="channel-select moderation-toggle">
+                  <option value="0">Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </div>
+              <div class="event-card">
+                <div class="event-header">
+                  <div class="event-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15 5l-1.41 1.41L18.17 11H2v2h16.17l-4.59 4.59L15 19l7-7-7-7z"/></svg></div>
+                  <span class="event-name">Voice Move</span>
+                </div>
+                <select id="voicemove_enabled" class="channel-select moderation-toggle">
+                  <option value="0">Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </div>
+          </div>
+        </section>
+
+        <!-- Welcome System -->
+        <section id="welcome" class="events-section">
+          <div class="section-header">
+            <div class="section-icon members">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+            </div>
+            <h2 class="section-title">Welcome System</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </div>
+                <span class="event-name">Enable Welcome Messages</span>
+              </div>
+              <select id="welcome_enabled" class="channel-select">
+                <option value="0">Disabled</option>
+                <option value="1">Enabled</option>
+              </select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V7h2v3z"/></svg>
+                </div>
+                <span class="event-name">Welcome Channel</span>
+              </div>
+              <select id="welcome_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                </div>
+                <span class="event-name">Welcome Banner URL</span>
+              </div>
+              <input type="text" id="welcome_image_url" class="channel-select" style="padding: 10px 14px; background: rgba(10, 15, 26, 0.7); border: 2px solid #696cff; color: var(--text-primary); border-radius: 12px; height: auto; width: 100%;" placeholder="https://example.com/image.png">
+            </div>
+            <div class="event-card" style="grid-column: 1 / -1;">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z"/></svg>
+                </div>
+                <span class="event-name">Custom Welcome Message (Description)</span>
+              </div>
+              <textarea id="welcome_message" class="channel-select" style="padding: 10px 14px; background: rgba(10, 15, 26, 0.7); border: 2px solid #696cff; color: var(--text-primary); border-radius: 12px; height: 100px; width: 100%; resize: vertical; font-family: inherit;" placeholder="Welcome to the server, {user}! We now have {count} members."></textarea>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Placeholders: {user} = Mention, {guild} = Server Name, {count} = Member Count</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="members" class="events-section">
+          <div class="section-header">
+            <div class="section-icon members">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <h2 class="section-title">Member Events</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <span class="event-name">Member Join</span>
+              </div>
+              <select id="join_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
+                <span class="event-name">Member Leave</span>
+              </div>
+              <select id="leave_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg>
+                </div>
+                <span class="event-name">Member Ban</span>
+              </div>
+              <select id="ban_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <span class="event-name">Nickname Change</span>
+              </div>
+              <select id="nickname_change_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>
+                <span class="event-name">User Profile Update</span>
+              </div>
+              <select id="user_update_channel_id" class="channel-select"></select>
+            </div>
+          </div>
+        </section>
+
+        <section id="roles" class="events-section">
+          <div class="section-header">
+            <div class="section-icon roles">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>
+            </div>
+            <h2 class="section-title">Role Events</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                </div>
+                <span class="event-name">Member Roles Changed</span>
+              </div>
+              <select id="role_update_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <span class="event-name">Role Created</span>
+              </div>
+              <select id="role_create_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </div>
+                <span class="event-name">Role Deleted</span>
+              </div>
+              <select id="role_delete_channel_id" class="channel-select"></select>
+            </div>
+          </div>
+        </section>
+
+        <section id="channels" class="events-section">
+          <div class="section-header">
+            <div class="section-icon channels">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5.41 21L6.12 17H2.12L2.47 15H6.47L7.53 9H3.53L3.88 7H7.88L8.59 3H10.59L9.88 7H15.88L16.59 3H18.59L17.88 7H21.88L21.53 9H17.53L16.47 15H20.47L20.12 17H16.12L15.41 21H13.41L14.12 17H8.12L7.41 21H5.41M9.47 9L8.47 15H14.47L15.47 9H9.47Z"/></svg>
+            </div>
+            <h2 class="section-title">Channel Events</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <span class="event-name">Channel Created</span>
+              </div>
+              <select id="channel_create_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <span class="event-name">Channel Updated</span>
+              </div>
+              <select id="channel_update_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </div>
+                <span class="event-name">Channel Deleted</span>
+              </div>
+              <select id="channel_delete_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3c-4.97 0-9 4.03-9 9v7c0 1.1.9 2 2 2h4v-8H5v-1c0-3.87 3.13-7 7-7s7 3.13 7 7v1h-4v8h4c1.1 0 2-.9 2-2v-7c0-4.97-4.03-9-9-9z"/></svg>
+                </div>
+                <span class="event-name">Voice State Change</span>
+              </div>
+              <select id="voice_change_channel_id" class="channel-select"></select>
+            </div>
+          </div>
+        </section>
+
+        <section id="messages" class="events-section">
+          <div class="section-header">
+            <div class="section-icon messages">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            </div>
+            <h2 class="section-title">Message Events</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </div>
+                <span class="event-name">Message Deleted</span>
+              </div>
+              <select id="message_delete_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <span class="event-name">Message Edited</span>
+              </div>
+              <select id="message_edit_channel_id" class="channel-select"></select>
+            </div>
+          </div>
+        </section>
+
+        <section id="invites" class="events-section">
+          <div class="section-header">
+            <div class="section-icon invites">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+            </div>
+            <h2 class="section-title">Invite Events</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <span class="event-name">Invite Created</span>
+              </div>
+              <select id="invite_create_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </div>
+                <span class="event-name">Invite Deleted</span>
+              </div>
+              <select id="invite_delete_channel_id" class="channel-select"></select>
+            </div>
+          </div>
+        </section>
+
+        <section id="server" class="events-section">
+          <div class="section-header">
+            <div class="section-icon server">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z"/></svg>
+            </div>
+            <h2 class="section-title">Server Events</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/></svg>
+                </div>
+                <span class="event-name">Server Updated</span>
+              </div>
+              <select id="server_update_channel_id" class="channel-select"></select>
+            </div>
+            <div class="event-card">
+              <div class="event-header">
+                <div class="event-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                </div>
+                <span class="event-name">Permissions Updated</span>
+              </div>
+              <select id="perms_update_channel_id" class="channel-select"></select>
+            </div>
+          </div>
+        </section>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+            Save Changes
+          </button>
+          <button type="reset" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+            Reset
+          </button>
+          <div id="status" class="status-bar"></div>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
