@@ -1,6 +1,6 @@
 !["Main Image"](https://github.com/jubaaerox/Kawaii-AeroX-V1/blob/e06adb4ae5a365a247907f047240dff42e83f200/Img/mainimg.webp "AdminLTE Presentation")
 
-t
+
 # Kawaii
 
 A comprehensive Discord logging bot that monitors and records all guild activities with a beautiful dashboard interface.
