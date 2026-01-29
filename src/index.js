@@ -56,9 +56,8 @@ dashboard(client);
 client.login(config.TOKEN);
 
 /*
-: ! Aegis !
-    + Discord: itsfizys
-    + Portfolio: https://itsfiizys.com
+: ! juba !
+    + Discord: x.juba
     + Community: https://discord.gg/8wfT8SfB5Z  (Kawaii Development )
     + for any queries reach out Community or DM me.
 */
