@@ -26,7 +26,7 @@ module.exports = {
 };
 
 /*
-: ! Aegis !
+: ! juba !
     + Discord: x.juba
     + Community: https://discord.gg/8wfT8SfB5Z  (Kawaii Development )
     + for any queries reach out Community or DM me.
