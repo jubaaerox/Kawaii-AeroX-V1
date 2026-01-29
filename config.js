@@ -25,6 +25,14 @@ module.exports = {
   GIPHY_API_KEY: "fVOXbfcBdwPBcdbkW8fXWpovxitLDb4K",
 };
 
+  // Bot Presence/Status Configuration
+  PRESENCE: {
+    ENABLED: true, // Whether or not the bot should update its status
+    STATUS: "online", // The bot's status [online, idle, dnd, invisible]
+    TYPE: "WATCHING", // Status type for the bot [PLAYING | LISTENING | WATCHING | COMPETING]
+    MESSAGE: "Prefix l!help {servers} Server", // Your bot status message
+  }
+};
 /*
 : ! Aegis !
     + Discord: x.juba
