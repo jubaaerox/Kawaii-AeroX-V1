@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config');
@@ -47,6 +47,7 @@ for (const file of eventFiles) {
 }
 
 client.once('ready', () => {
+  client.user.setActivity('?help', { type: ActivityType.Playing });
   printBotReady(client.user.tag, client.guilds.cache.size);
   printSystemReady();
 });
