@@ -133,7 +133,7 @@ The dashboard provides RESTful API endpoints for accessing logs:
 ## Support
 
 Join our community Discord server for support and updates:
-- **Support Server**: [discord.gg/cordix](https://discord.gg/xjZAAxnmtF)
+- **Support Server**: [discord.gg/cordix](https://discord.gg/Z9VYgEhBUE)
 
 ## Credits
 
