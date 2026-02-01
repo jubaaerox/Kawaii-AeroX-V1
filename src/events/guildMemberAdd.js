@@ -25,9 +25,9 @@ module.exports = {
       const welcomeChannel = member.guild.channels.cache.get(settings.welcome_channel_id);
       if (welcomeChannel) {
         let description = settings.welcome_message || `
-> [**Anc**](https://discord.gg/aerox)
-> [**Free Codez**](https://discord.gg/aerox)
-> [**Chat**](https://discord.gg/aerox)
+> [**Anc**](https://discord.gg/g7u4ZHTyB9)
+> [**Free Codez**](https://discord.gg/g7u4ZHTyB9)
+> [**Chat**](https://discord.gg/g7u4ZHTyB9)
 
 **Now we have ${member.guild.memberCount} members**
 `;
